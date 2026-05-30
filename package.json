@@ -1,0 +1,66 @@
+{
+  "name": "ai-workspace-bridge",
+  "displayName": "AI Workspace Bridge",
+  "description": "Custom language model provider for VS Code chat.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ai-workspace-bridge.setToken",
+        "title": "AI Workspace Bridge: Set ChatGPT Token"
+      },
+      {
+        "command": "ai-workspace-bridge.clearToken",
+        "title": "AI Workspace Bridge: Clear ChatGPT Token"
+      },
+      {
+        "command": "ai-workspace-bridge.status",
+        "title": "AI Workspace Bridge: Check Status"
+      }
+    ],
+    "languageModelChatProviders": [
+      {
+        "vendor": "ai-workspace-bridge",
+        "displayName": "AI Workspace Bridge"
+      }
+    ],
+    "chatParticipants": [
+      {
+        "id": "ai-workspace-bridge.myagent",
+        "name": "myagent",
+        "fullName": "MyAgent",
+        "description": "Mock Workspace Agent chat participant.",
+        "isSticky": true
+      }
+    ]
+  },
+  "enabledApiProposals": [
+    "languageModelSystem"
+  ],
+  "scripts": {
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "puppeteer": "^24.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.6.3"
+  }
+}
