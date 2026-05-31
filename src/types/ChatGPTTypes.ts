@@ -9,4 +9,5 @@ export interface ChatGPTSelectors {
   promptInput: string;
   assistantMessage: string;
   stopGeneratingButton: string;
+  sendButton: string;
 }

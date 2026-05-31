@@ -41,10 +41,18 @@ export function activate(context: vscode.ExtensionContext): void {
       await backendClient.clearToken();
     });
 
+    const resetBrowserProfileCommand = vscode.commands.registerCommand("ai-workspace-bridge.resetBrowserProfile", async () => {
+      await backendClient.resetBrowserProfile();
+    });
+
+    const openBrowserCommand = vscode.commands.registerCommand("ai-workspace-bridge.openBrowser", async () => {
+      await backendClient.openBrowserForLogin();
+    });
+
     const statusCommand = vscode.commands.registerCommand("ai-workspace-bridge.status", () => {
       const message = backendClient.getStatus();
 
-      if (backendClient.hasToken()) {
+      if (backendClient.canAttemptChatGPT()) {
         vscode.window.showInformationMessage(message);
       } else {
         vscode.window.showWarningMessage(message);
@@ -56,6 +64,8 @@ export function activate(context: vscode.ExtensionContext): void {
       participant,
       setTokenCommand,
       clearTokenCommand,
+      resetBrowserProfileCommand,
+      openBrowserCommand,
       statusCommand,
       backendClient,
       logger

@@ -26,6 +26,14 @@
         "title": "AI Workspace Bridge: Clear ChatGPT Token"
       },
       {
+        "command": "ai-workspace-bridge.resetBrowserProfile",
+        "title": "AI Workspace Bridge: Reset ChatGPT Browser Profile"
+      },
+      {
+        "command": "ai-workspace-bridge.openBrowser",
+        "title": "AI Workspace Bridge: Open ChatGPT Browser"
+      },
+      {
         "command": "ai-workspace-bridge.status",
         "title": "AI Workspace Bridge: Check Status"
       }
