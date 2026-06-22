@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-vscode text-vscode bg-editor-bg text-editor-fg m-0 p-0 overflow-hidden;
+  }
+}
+
+@layer utilities {
+  /* Thin custom scrollbar using VS Code vars */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--vscode-scrollbarSlider-background);
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: var(--vscode-scrollbarSlider-hoverBackground);
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:active {
+    background-color: var(--vscode-scrollbarSlider-activeBackground);
+  }
+}

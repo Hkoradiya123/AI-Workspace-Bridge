@@ -3,7 +3,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import puppeteer, { Browser, Page } from "puppeteer";
 import { CHATGPT_TOKEN_SECRET_KEY, ChatGPTClientStatus, ChatGPTSelectors } from "../types/ChatGPTTypes";
-import { Logger } from "../utils/Logger";
+import { Logger } from "./Logger";
 
 // Import stealth plugin to hide browser automation from CloudFlare detection
 let StealthPlugin: any;
@@ -75,10 +75,14 @@ export class ChatGPTClient implements vscode.Disposable {
       return;
     }
 
+    await this.setToken(token);
+    vscode.window.showInformationMessage("ChatGPT token saved. Use the browser window to finish any login or verification.");
+  }
+
+  public async setToken(token: string): Promise<void> {
     this.token = token.trim();
     await this.context.secrets.store(CHATGPT_TOKEN_SECRET_KEY, this.token);
     await this.initBrowser();
-    vscode.window.showInformationMessage("ChatGPT token saved. Use the browser window to finish any login or verification.");
   }
 
   public async clearToken(): Promise<void> {
@@ -200,6 +204,15 @@ export class ChatGPTClient implements vscode.Disposable {
           this.page.setDefaultTimeout(30000);
           this.page.setDefaultNavigationTimeout(45000);
           
+          await this.page.setRequestInterception(true);
+          this.page.on('request', (req) => {
+            if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) {
+              req.abort();
+            } else {
+              req.continue();
+            }
+          });
+          
           if (this.token) {
             await this.applySessionCookie();
           }
@@ -278,7 +291,9 @@ export class ChatGPTClient implements vscode.Disposable {
         "--disable-blink-features=AutomationControlled",
         "--start-maximized",
         "--disable-web-resources",
-        "--disable-extensions"
+        "--disable-extensions",
+        "--disable-gpu",
+        "--blink-settings=imagesEnabled=false"
       ]
     };
 
@@ -502,7 +517,34 @@ export class ChatGPTClient implements vscode.Disposable {
       const snapshot = await this.page.evaluate((assistantSelector, stopSelector) => {
         const assistantMessages = Array.from(document.querySelectorAll(assistantSelector));
         const lastMessage = assistantMessages[assistantMessages.length - 1] as HTMLElement | undefined;
-        const latestText = lastMessage?.innerText ?? "";
+        let latestText = "";
+        
+        if (lastMessage) {
+          const clone = lastMessage.cloneNode(true) as HTMLElement;
+          // Remove math duplication
+          clone.querySelectorAll('.katex-mathml').forEach(el => el.remove());
+          
+          // Format code blocks
+          clone.querySelectorAll('pre').forEach(pre => {
+            const code = pre.querySelector('code');
+            const langMatch = code?.className.match(/language-(\w+)/);
+            const lang = langMatch ? langMatch[1] : '';
+            const text = pre.innerText || pre.textContent || '';
+            const wrapper = document.createElement('div');
+            wrapper.innerText = `\n\`\`\`${lang}\n${text}\n\`\`\`\n`;
+            if (pre.parentNode) pre.parentNode.replaceChild(wrapper, pre);
+          });
+          
+          // Format inline code
+          clone.querySelectorAll('code:not(pre code)').forEach(code => {
+            const wrapper = document.createElement('span');
+            wrapper.innerText = `\`${code.textContent}\``;
+            if (code.parentNode) code.parentNode.replaceChild(wrapper, code);
+          });
+          
+          latestText = clone.innerText?.trim() ?? "";
+        }
+        
         const stopButton = document.querySelector(stopSelector);
         return {
           assistantCount: assistantMessages.length,
@@ -545,13 +587,35 @@ export class ChatGPTClient implements vscode.Disposable {
     }
 
     return this.page.$$eval(DEFAULT_SELECTORS.assistantMessage, (messages) => {
-      const lastMessage = messages[messages.length - 1];
+      const lastMessage = messages[messages.length - 1] as HTMLElement;
       if (!lastMessage) {
         return "";
       }
 
-      // innerText preserves visual line breaks from code blocks/lists better than textContent.
-      return (lastMessage as HTMLElement).innerText?.trim() ?? "";
+      const clone = lastMessage.cloneNode(true) as HTMLElement;
+      
+      // Remove math duplication
+      clone.querySelectorAll('.katex-mathml').forEach(el => el.remove());
+      
+      // Format code blocks
+      clone.querySelectorAll('pre').forEach(pre => {
+        const code = pre.querySelector('code');
+        const langMatch = code?.className.match(/language-(\w+)/);
+        const lang = langMatch ? langMatch[1] : '';
+        const text = pre.innerText || pre.textContent || '';
+        const wrapper = document.createElement('div');
+        wrapper.innerText = `\n\`\`\`${lang}\n${text}\n\`\`\`\n`;
+        if (pre.parentNode) pre.parentNode.replaceChild(wrapper, pre);
+      });
+      
+      // Format inline code
+      clone.querySelectorAll('code:not(pre code)').forEach(code => {
+        const wrapper = document.createElement('span');
+        wrapper.innerText = `\`${code.textContent}\``;
+        if (code.parentNode) code.parentNode.replaceChild(wrapper, code);
+      });
+
+      return clone.innerText?.trim() ?? "";
     });
   }
 }

@@ -1,0 +1,88 @@
+{
+  "name": "ai-workspace-bridge",
+  "displayName": "AI Workspace Bridge",
+  "description": "Your personal AI coding assistant with full workspace access",
+  "version": "1.0.0",
+  "publisher": "HarshKoradiya",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:aiwb.sidebarView"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aiwb-sidebar",
+          "title": "AI Workspace Bridge",
+          "icon": "$(hubot)"
+        }
+      ]
+    },
+    "views": {
+      "aiwb-sidebar": [
+        {
+          "type": "webview",
+          "id": "aiwb.sidebarView",
+          "name": "Chat"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "aiwb.focusSidebar",
+        "title": "Focus AI Workspace Bridge Sidebar",
+        "category": "AI Workspace Bridge"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "aiwb.focusSidebar",
+        "key": "ctrl+l",
+        "mac": "cmd+l"
+      }
+    ],
+    "configuration": {
+      "title": "AI Workspace Bridge",
+      "properties": {
+        "aiwb.provider": {
+          "type": "string",
+          "default": "browser",
+          "enum": ["browser", "openai", "anthropic"],
+          "description": "The AI provider to use."
+        },
+        "aiwb.model": {
+          "type": "string",
+          "default": "gpt-4o",
+          "description": "The model to use (for OpenAI/Anthropic)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "package": "node esbuild.js --production",
+    "lint": "eslint src --ext ts",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "@typescript-eslint/parser": "^6.4.0",
+    "eslint": "^8.47.0",
+    "esbuild": "^0.19.2",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.1.6"
+  }
+}

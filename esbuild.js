@@ -8,7 +8,13 @@ const buildOptions = {
   platform: "node",
   target: "es2022",
   outfile: "dist/extension.js",
-  external: ["vscode", "puppeteer"],
+  external: [
+    "vscode",
+    "puppeteer",
+    "puppeteer-extra",
+    "puppeteer-extra-plugin-stealth",
+    "puppeteer-extra-plugin"
+  ],
   sourcemap: true
 };
 
